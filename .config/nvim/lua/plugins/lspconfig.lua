@@ -205,19 +205,11 @@ local M = { -- LSP Configuration & Plugins
 
     -- Enable the following language servers
     local servers = {
-      -- gopls = {},
-      -- pyright = {},
-      -- rust_analyzer = {},
-      -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-      --
-      -- Some languages (like typescript) have entire language plugins that can be useful:
-      --    https://github.com/pmizio/typescript-tools.nvim
-      --
-      ts_ls = {}, -- TypeScript LSP
+      vtsls = {}, -- TS and JS LSP, faster than tsserver
       cssls = {}, -- CSS LSP
+      tailwindcss = {}, -- Tailwind CSS LSP
       html = {}, -- HTML LSP
       jsonls = {}, -- JSON LSP
-      hls = {}, -- Haskell LSP
       lua_ls = {
         Lua = {
           diagnostics = {
@@ -276,14 +268,14 @@ local M = { -- LSP Configuration & Plugins
     local ensure_installed = vim.tbl_keys(servers or {})
     vim.list_extend(ensure_installed, {
       'stylua', -- Lua Formatter
-      'fantomas', -- F# Formatter
-      'ormolu', -- Haskell Formatter
-      'hlint', -- Haskell Linter
       'markdownlint', -- Markdown Linter
       'prettierd', -- Formatter { Markdown, }
+      'eslint_d', -- Linting JS/TS
+      'htmlhint', -- HTML Linter
+      'stylelint', -- CSS Linter
       'isort', -- Python Formatter
       'black', -- Python Formatter
-      'ruff', -- Pythong Linter
+      'ruff', -- Python Linter
       'clang-format', -- C/C++ Formatter
       'cpplint', -- C/C++ Linter
       'cmakelint', -- CMake Linter
