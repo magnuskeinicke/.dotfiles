@@ -12,6 +12,12 @@ local M = {
         json = {},
         text = {},
         cmake = { 'cmakelint' },
+        javascript = { 'eslint_d' },
+        typescript = { 'eslint_d' },
+        typescriptreact = { 'eslint_d' },
+        javascriptreact = { 'eslint_d' },
+        html = { 'htmlhint' },
+        css = { 'stylelint' },
       }
 
       -- Create autocommand which carries out the actual linting
