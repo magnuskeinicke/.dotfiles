@@ -11,3 +11,8 @@ alias tks='tmux kill-session -t'
 alias vim='nvim'
 alias vsvim='NVIM_APPNAME=nvim-vscode nvim'
 alias minivim='NVIM_APPNAME=nvim-mini nvim'
+
+# seranote
+alias sn='cd $HOME/Documents/voice-to-text/; source ./tools/scripts/environment/load-variables.sh'
+alias sndev='sn; npx nx dev seranote-web'
+alias sntest='sn; npx nx affected -t lint test build e2e'
