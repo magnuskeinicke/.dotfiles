@@ -1,0 +1,19 @@
+[tools]
+cmake="latest"
+github-cli="latest"
+fd="latest"
+bat="latest"
+ninja="latest"
+ripgrep="latest"
+uv="latest"
+neovim="nightly"
+tmux="latest"
+fzf="latest"
+node="lts"
+lazygit="latest"
+eza="latest"
+
+[settings]
+trusted_config_paths = [
+  '~/.dotfiles/config/mise/config.toml'
+]

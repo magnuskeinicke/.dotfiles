@@ -1,0 +1,106 @@
+# Makefile for Ubuntu bases bootstrap + dotfiles
+# Usage:
+#   make            # same as make help
+#   make all        # full setup (link -> apt -> mise -> rest)
+#   make doctor     # verify prerequisites + symlinks + key paths
+
+SHELL := /usr/bin/bash
+.ONESHELL:
+.SHELLFLAGS := -euo pipefail -c
+
+.DEFAULT_GOAL := help
+
+.PHONY: all help doctor link apt mise starship zsh ssh-github tmux nvim fonts
+
+REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+help:
+	@echo "Targets:"
+	@echo "  make all         - link -> apt -> mise -> starship -> zsh -> tmux -> nvim"
+	@echo "  make doctor      - sanity checks (recommended before all)"
+	@echo "  make link        - symlink dotfiles into place"
+	@echo "  make apt         - apt update/upgrade + install packages"
+	@echo "  make fonts       - install JetBrainsMono Nerd Font (user-local)"
+	@echo "  make mise        - install mise + tools (reads ~/.config/mise/config.toml)"
+	@echo "  make starship    - install starship prompt"
+	@echo "  make zsh         - install oh-my-zsh + plugins"
+	@echo "  make ssh-github  - generate/add ssh keys via gh (interactive)"
+	@echo "  make tmux        - install TPM + tmux plugins"
+	@echo "  make nvim        - headless nvim plugin install/update"
+	@echo ""
+	@echo "Tip: run 'make doctor' first."
+
+# Full bootstrap
+all: doctor link apt fonts mise starship zsh tmux nvim
+	@echo "✅ All done. Consider rebooting if shell/fonts/drivers changed."
+
+# ---------- Core tasks ----------
+link:
+	./scripts/90_link.sh
+
+apt:
+	./scripts/10_apt.sh
+
+fonts:
+	./scripts/25_fonts.sh
+
+mise:
+	./scripts/20_mise.sh
+
+starship:
+	./scripts/30_starship.sh
+
+zsh:
+	./scripts/40_zsh.sh
+
+ssh-github:
+	./scripts/50_ssh_github.sh
+
+tmux:
+	./scripts/60_tmux.sh
+
+nvim:
+	./scripts/70_nvim.sh
+
+# ---------- Checks ----------
+doctor:
+	@echo "==> Doctor: repo layout"
+	@test -d "$(REPO_DIR)/scripts" || (echo "Missing ./scripts"; exit 1)
+	@test -d "$(REPO_DIR)/config"  || (echo "Missing ./config (for ~/.config symlinks)"; exit 1)
+	@test -f "$(REPO_DIR)/apt/packages.txt" || (echo "Missing ./apt/packages.txt"; exit 1)
+	@test -f "$(REPO_DIR)/zsh/.zshrc" || (echo "Missing ./zsh/zshrc"; exit 1)
+	@test -f "$(REPO_DIR)/zsh/.zsh_aliases" || (echo "Missing ./zsh/zsh_aliases"; exit 1)
+	@test -f "$(REPO_DIR)/zsh/plugins.txt" || (echo "Missing ./zsh/plugins.txt"; exit 1)
+
+	@echo "==> Doctor: required executables (some installed by apt/mise later)"
+	@command -v bash >/dev/null
+	@command -v curl >/dev/null || echo "WARN: curl not found yet (installed by make apt)"
+	@command -v git  >/dev/null || echo "WARN: git not found yet (installed by make apt)"
+
+	@echo "==> Doctor: mise config presence in repo"
+	@test -f "$(REPO_DIR)/config/mise/config.toml" || (echo "Missing ./config/mise/config.toml"; exit 1)
+
+	@echo "==> Doctor: symlink plan"
+	@echo "  Will link: $(REPO_DIR)/config/* -> ~/.config/*"
+	@echo "  Will link: $(REPO_DIR)/zsh/.zshrc -> ~/.zshrc"
+	@echo "  Will link: $(REPO_DIR)/zsh/.zsh_aliases -> ~/.zsh_aliases"
+	@echo "  Will link: $(REPO_DIR)/config/starship.tomL -> ~/.config/starship.toml"
+
+	@echo "==> Doctor: after-link checks (only if you've already run make link)"
+	@if [ -L "$$HOME/.config/mise" ]; then \
+	  echo "  OK: ~/.config/mise is a symlink"; \
+	elif [ -f "$$HOME/.config/mise/config.toml" ]; then \
+	  echo "  OK: ~/.config/mise/config.toml exists (maybe not symlinked)"; \
+	else \
+	  echo "  NOTE: ~/.config/mise/config.toml not present yet (run: make link)"; \
+	fi
+
+	@echo "==> Doctor: SSH key paths (informational)"
+	@if [ -f "$$HOME/.ssh/id_ed25519" ]; then \
+	  echo "  Found: ~/.ssh/id_ed25519 (private key)"; \
+	else \
+	  echo "  NOTE: No ~/.ssh/id_ed25519 yet (created by make ssh-github)"; \
+	fi
+
+	@echo "✅ Doctor complete."
+
