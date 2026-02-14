@@ -15,4 +15,4 @@ eza = "latest"
 go = "latest"
 
 [settings]
-trusted_config_paths = ['~/.dotfiles/config/mise/config.toml']
+trusted_config_paths = ['~/dotfiles/config/mise/config.toml']

@@ -9,7 +9,7 @@ echo "Linking ~/.config/* from dotfiles/config/ ..."
 for path in "$REPO_DIR/config/"*; do
   [ -e "$path" ] || continue
   name="$(basename "$path")"
-  ln -sfnT "$path" "$HOME/.config/$name"
+  rm -rf "$HOME/.config/$name" && ln -sfnT "$path" "$HOME/.config/$name"
 done
 
 echo "Linking home dotfiles..."
