@@ -68,8 +68,8 @@ doctor:
 	@test -d "$(REPO_DIR)/scripts" || (echo "Missing ./scripts"; exit 1)
 	@test -d "$(REPO_DIR)/config"  || (echo "Missing ./config (for ~/.config symlinks)"; exit 1)
 	@test -f "$(REPO_DIR)/apt/packages.txt" || (echo "Missing ./apt/packages.txt"; exit 1)
-	@test -f "$(REPO_DIR)/zsh/.zshrc" || (echo "Missing ./zsh/zshrc"; exit 1)
-	@test -f "$(REPO_DIR)/zsh/.zsh_aliases" || (echo "Missing ./zsh/zsh_aliases"; exit 1)
+	@test -f "$(REPO_DIR)/zsh/zshrc" || (echo "Missing ./zsh/zshrc"; exit 1)
+	@test -f "$(REPO_DIR)/zsh/zsh_aliases" || (echo "Missing ./zsh/zsh_aliases"; exit 1)
 	@test -f "$(REPO_DIR)/zsh/plugins.txt" || (echo "Missing ./zsh/plugins.txt"; exit 1)
 
 	@echo "==> Doctor: required executables (some installed by apt/mise later)"
