@@ -3,7 +3,7 @@
 # =========================
 
 # ---- Paths ----
-: "${DOTFILES_DIR:=${HOME}/.dotfiles}"
+: "${DOTFILES_DIR:=${HOME}/dotfiles}"
 FLATPAK_LIST="${DOTFILES_DIR}/flatpak/packages.txt"
 APT_LIST="${DOTFILES_DIR}/apt/packages.txt"
 

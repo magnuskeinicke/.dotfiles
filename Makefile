@@ -10,7 +10,7 @@ SHELL := /usr/bin/bash
 
 .DEFAULT_GOAL := help
 
-.PHONY: all help doctor link apt mise starship zsh ssh-github tmux nvim fonts
+.PHONY: all help doctor link apt mise starship zsh ssh-github tmux nvim fonts flatpak
 
 REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -20,6 +20,7 @@ help:
 	@echo "  make doctor      - sanity checks (recommended before all)"
 	@echo "  make link        - symlink dotfiles into place"
 	@echo "  make apt         - apt update/upgrade + install packages"
+	@echo "  make flatpak     - Install flatpaks"
 	@echo "  make fonts       - install JetBrainsMono Nerd Font (user-local)"
 	@echo "  make mise        - install mise + tools (reads ~/.config/mise/config.toml)"
 	@echo "  make starship    - install starship prompt"
@@ -31,7 +32,7 @@ help:
 	@echo "Tip: run 'make doctor' first."
 
 # Full bootstrap
-all: doctor link apt fonts mise starship zsh tmux nvim
+all: doctor link apt flatpak fonts mise starship zsh tmux nvim
 	@echo "✅ All done. Consider rebooting if shell/fonts/drivers changed."
 
 # ---------- Core tasks ----------
@@ -40,6 +41,9 @@ link:
 
 apt:
 	./scripts/10_apt.sh
+
+flatpak:
+	./scripts/12_flatpak.sh
 
 fonts:
 	./scripts/25_fonts.sh
