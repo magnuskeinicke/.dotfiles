@@ -153,17 +153,6 @@ export GITHUB_PAT=$(secret-tool lookup service github-mcp user $USER)
 export FIGMA_PAT=$(secret-tool lookup service figma-mcp user $USER)
 export POSTHOG_PAT=$(secret-tool lookup service posthog-pat user $USER)
 
-# We use mise, so set codexia to use the mise path to codex
-codexia() {
-  CODEX_PATH="$(mise which codex)" command codexia "$@"
-}
-
-# Go
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$HOME/go/bin
-
-# Flutter
-export PATH=$PATH:$HOME/development/flutter/bin
 
 # Start tmux if not inside tmux
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [[ "$TERM" == "xterm-ghostty" ]] && [ -z "$TMUX" ]; then
@@ -172,12 +161,4 @@ fi
 
 fpath+=${ZDOTDIR:-~}/.zsh_functions
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 eval "$(starship init zsh)"
-
-
-# opencode
-export PATH=/home/keinicke/.opencode/bin:$PATH
