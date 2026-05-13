@@ -34,11 +34,6 @@ yabai -m config layout bsp
 # will keep tiled windows out of this strip on every display.
 yabai -m config external_bar all:32:0
 
-# Make the macOS menu bar fully transparent — it can't be removed (cursor
-# at the top still triggers it), but this way nothing visible appears on
-# top of SketchyBar. Requires yabai's scripting addition.
-yabai -m config menubar_opacity 0.0
-
 # Padding and gaps (default: 0)
 yabai -m config top_padding    10
 yabai -m config bottom_padding 10
