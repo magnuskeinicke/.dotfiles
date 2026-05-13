@@ -1,0 +1,4 @@
+# macOS-specific Ghostty overrides. Linked to `config-os` by 90_link.sh.
+# Hide the title bar but keep macOS's rounded window corners (which
+# `window-decoration = none` would remove).
+macos-titlebar-style = hidden

@@ -1,0 +1,2 @@
+# Linux-specific Ghostty overrides. Linked to `config-os` by 90_link.sh.
+window-decoration = none

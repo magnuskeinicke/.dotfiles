@@ -33,3 +33,6 @@ alias lg="lazygit"
 
 # Nimbalyst
 alias nimbalyst="$HOME/Applications/squashfs-root/AppRun"
+
+# skhd cheat sheet
+alias cheat='less ~/.config/skhd/cheatsheet.txt'

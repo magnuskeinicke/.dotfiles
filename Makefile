@@ -10,10 +10,16 @@ SHELL := /bin/bash
 
 .DEFAULT_GOAL := help
 
-.PHONY: all help doctor link packages apt mise starship zsh ssh-github tmux nvim fonts flatpak
+.PHONY: all help doctor link packages apt mise starship zsh ssh-github tmux nvim fonts flatpak yabai-sa mise-launchd
 
 REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 UNAME_S  := $(shell uname -s)
+
+# macOS-only steps appended to `make all` (empty on Linux).
+MAC_ONLY_STEPS :=
+ifeq ($(UNAME_S),Darwin)
+MAC_ONLY_STEPS += yabai-sa mise-launchd
+endif
 
 help:
 	@echo "Targets:"
@@ -29,11 +35,13 @@ help:
 	@echo "  make ssh-github  - generate/add ssh keys via gh (interactive)"
 	@echo "  make tmux        - install TPM + tmux plugins"
 	@echo "  make nvim        - headless nvim plugin install/update"
+	@echo "  make yabai-sa    - install yabai scripting-addition sudoers rule (macOS only; no-op elsewhere)"
+	@echo "  make mise-launchd - install LaunchAgent so GUI apps see mise shims in PATH (macOS only; no-op elsewhere)"
 	@echo ""
 	@echo "Tip: run 'make doctor' first. Detected OS: $(UNAME_S)"
 
 # Full bootstrap
-all: doctor link packages flatpak fonts mise starship zsh tmux nvim
+all: doctor link packages flatpak fonts mise starship zsh tmux nvim $(MAC_ONLY_STEPS)
 	@echo "✅ All done. Consider rebooting if shell/fonts/drivers changed."
 
 # ---------- Core tasks ----------
@@ -70,6 +78,12 @@ tmux:
 nvim:
 	./scripts/70_nvim.sh
 
+yabai-sa:
+	./scripts/95_yabai_sa.sh
+
+mise-launchd:
+	./scripts/96_mise_launchd.sh
+
 # ---------- Checks ----------
 doctor:
 	@echo "==> Doctor: detected OS = $(UNAME_S)"
@@ -99,6 +113,8 @@ doctor:
 	@echo "  Will link: $(REPO_DIR)/zsh/zshrc -> ~/.zshrc"
 	@echo "  Will link: $(REPO_DIR)/zsh/zsh_aliases -> ~/.zsh_aliases"
 	@echo "  Will link: $(REPO_DIR)/zsh/helpers.zsh -> ~/helpers.zsh"
+	@echo "  Will link: $(REPO_DIR)/git/gitconfig -> ~/.gitconfig"
+	@echo "  Will link: $(REPO_DIR)/git/gitconfig-work -> ~/.gitconfig-work"
 
 	@echo "==> Doctor: after-link checks (only if you've already run make link)"
 	@if [ -L "$$HOME/.config/mise" ]; then \

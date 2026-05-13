@@ -1,0 +1,61 @@
+#!/usr/bin/env sh
+
+# Scripting addition (requires SIP partial-disable).
+# For this to work you must configure sudo such that
+# it will be able to run the command without password.
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+# Notify SketchyBar when spaces or displays change so it can refresh the
+# workspace indicators. Idempotent if sketchybar isn't running yet.
+yabai -m signal --add event=space_changed   action="sketchybar --trigger space_change"
+yabai -m signal --add event=display_changed action="sketchybar --trigger display_change"
+
+# When spaces are created/destroyed (e.g. by the dynamic-workspace skhd
+# binding), rebuild SketchyBar's space pills to match yabai's reality.
+yabai -m signal --add event=space_created   action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
+yabai -m signal --add event=space_destroyed action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
+
+# Auto-destroy empty dynamic workspaces when their last window leaves.
+# The first MIN_PER_DISPLAY spaces (set inside the script) are preserved
+# as predefined workspaces even when empty.
+yabai -m signal --add event=window_destroyed       action="$HOME/.config/yabai/scripts/cleanup-empty-spaces.sh"
+yabai -m signal --add event=application_terminated action="$HOME/.config/yabai/scripts/cleanup-empty-spaces.sh"
+
+# Make sure the predefined workspaces exist (creates missing ones up to
+# MIN_PER_DISPLAY per display). Idempotent — never destroys.
+"$HOME/.config/yabai/scripts/init-workspaces.sh"
+
+# Tiling layout: bsp = binary space partitioning (new windows auto-tile
+# next to the focused one, like COSMIC). Alternatives: stack, float.
+yabai -m config layout bsp
+
+# Reserve 32 px at the top for SketchyBar (and 0 at the bottom). yabai
+# will keep tiled windows out of this strip on every display.
+yabai -m config external_bar all:32:0
+
+# Make the macOS menu bar fully transparent — it can't be removed (cursor
+# at the top still triggers it), but this way nothing visible appears on
+# top of SketchyBar. Requires yabai's scripting addition.
+yabai -m config menubar_opacity 0.0
+
+# Padding and gaps (default: 0)
+yabai -m config top_padding    10
+yabai -m config bottom_padding 10
+yabai -m config left_padding   10
+yabai -m config right_padding  10
+yabai -m config window_gap     10
+
+# Shadows: only on floating windows (less visual noise in tiled layouts).
+yabai -m config window_shadow float
+
+# Opacity: yabai is the single source of truth — apps shouldn't set their own
+# opacity (e.g. Ghostty's background-opacity is now 1.0), otherwise values
+# multiply.
+yabai -m config window_opacity        on
+yabai -m config active_window_opacity 0.95
+yabai -m config normal_window_opacity 0.8
+
+# Focus follows mouse (COSMIC-like): hovering a window focuses it.
+# Options: autofocus (focus only), autoraise (focus + raise to top), off.
+yabai -m config focus_follows_mouse autofocus

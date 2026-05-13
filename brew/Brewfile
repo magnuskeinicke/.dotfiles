@@ -11,6 +11,7 @@ brew "curl"
 brew "gettext"
 brew "git"
 brew "gnupg"
+brew "jq"
 brew "libevent"
 brew "mise"
 brew "ncurses"
@@ -20,8 +21,17 @@ brew "starship"
 brew "tree"
 brew "wget"
 
+# --- Window management (macOS) ---
+brew "koekeishiya/formulae/yabai"
+brew "koekeishiya/formulae/skhd"
+brew "FelixKratz/formulae/sketchybar"
+brew "blueutil"  # CLI for Bluetooth state — used by sketchybar's BT indicator
+
 # --- Apps (casks) ---
 cask "brave-browser"
+cask "claude"
+cask "codex-app"
+cask "conductor"
 cask "dbeaver-community"
 cask "docker"
 cask "ghostty"
@@ -31,3 +41,5 @@ cask "vivaldi"
 
 # --- Fonts ---
 cask "font-jetbrains-mono-nerd-font"
+cask "sf-symbols"
+cask "font-sketchybar-app-font"

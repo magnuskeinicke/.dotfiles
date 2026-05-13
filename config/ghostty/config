@@ -3,14 +3,18 @@ theme = catppuccin-mocha.conf
 cursor-style = block
 cursor-style-blink = false
 cursor-click-to-move = true
-background-opacity = 0.9
+background-opacity = 1.0
 maximize = true
 keybind = ctrl+a>ctrl+q=quit
 confirm-close-surface=false
 keybind = unconsumed:ctrl+tab=next_tab
 keybind = unconsumed:ctrl+shift+tab=previous_tab
-window-decoration = none
 cursor-text = #000000
+macos-option-as-alt = true
+
+# Per-OS overlay (linked by scripts/90_link.sh based on uname).
+# Holds window-decoration / titlebar settings that differ per platform.
+config-file = config-os
 # This is the configuration file for Ghostty.
 #
 # This template file has been automatically created at the following
