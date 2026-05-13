@@ -1,0 +1,33 @@
+# macOS counterpart to apt/packages.txt + flatpak/packages.txt.
+# Install with: brew bundle --file=brew/Brewfile
+
+# --- Core CLI ---
+brew "autoconf"
+brew "automake"
+brew "bison"
+brew "btop"
+brew "coreutils"
+brew "curl"
+brew "gettext"
+brew "git"
+brew "gnupg"
+brew "libevent"
+brew "mise"
+brew "ncurses"
+brew "pkgconf"
+brew "socat"
+brew "starship"
+brew "tree"
+brew "wget"
+
+# --- Apps (casks) ---
+cask "brave-browser"
+cask "dbeaver-community"
+cask "docker"
+cask "ghostty"
+cask "postman"
+cask "proton-mail"
+cask "vivaldi"
+
+# --- Fonts ---
+cask "font-jetbrains-mono-nerd-font"

@@ -1,26 +1,27 @@
-# Makefile for Ubuntu bases bootstrap + dotfiles
+# Makefile for cross-platform bootstrap + dotfiles (Ubuntu + macOS)
 # Usage:
 #   make            # same as make help
-#   make all        # full setup (link -> apt -> mise -> rest)
+#   make all        # full setup (link -> packages -> mise -> rest)
 #   make doctor     # verify prerequisites + symlinks + key paths
 
-SHELL := /usr/bin/bash
+SHELL := /bin/bash
 .ONESHELL:
 .SHELLFLAGS := -euo pipefail -c
 
 .DEFAULT_GOAL := help
 
-.PHONY: all help doctor link apt mise starship zsh ssh-github tmux nvim fonts flatpak
+.PHONY: all help doctor link packages apt mise starship zsh ssh-github tmux nvim fonts flatpak
 
 REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+UNAME_S  := $(shell uname -s)
 
 help:
 	@echo "Targets:"
-	@echo "  make all         - link -> apt -> mise -> starship -> zsh -> tmux -> nvim"
+	@echo "  make all         - link -> packages -> flatpak (Linux) -> fonts -> mise -> starship -> zsh -> tmux -> nvim"
 	@echo "  make doctor      - sanity checks (recommended before all)"
 	@echo "  make link        - symlink dotfiles into place"
-	@echo "  make apt         - apt update/upgrade + install packages"
-	@echo "  make flatpak     - Install flatpaks"
+	@echo "  make packages    - install OS packages (apt on Linux, brew bundle on macOS)"
+	@echo "  make flatpak     - install flatpaks (Linux only; no-op on macOS)"
 	@echo "  make fonts       - install JetBrainsMono Nerd Font (user-local)"
 	@echo "  make mise        - install mise + tools (reads ~/.config/mise/config.toml)"
 	@echo "  make starship    - install starship prompt"
@@ -29,18 +30,21 @@ help:
 	@echo "  make tmux        - install TPM + tmux plugins"
 	@echo "  make nvim        - headless nvim plugin install/update"
 	@echo ""
-	@echo "Tip: run 'make doctor' first."
+	@echo "Tip: run 'make doctor' first. Detected OS: $(UNAME_S)"
 
 # Full bootstrap
-all: doctor link apt flatpak fonts mise starship zsh tmux nvim
+all: doctor link packages flatpak fonts mise starship zsh tmux nvim
 	@echo "✅ All done. Consider rebooting if shell/fonts/drivers changed."
 
 # ---------- Core tasks ----------
 link:
 	./scripts/90_link.sh
 
-apt:
-	./scripts/10_apt.sh
+packages:
+	./scripts/10_packages.sh
+
+# Back-compat alias (old name)
+apt: packages
 
 flatpak:
 	./scripts/12_flatpak.sh
@@ -68,27 +72,33 @@ nvim:
 
 # ---------- Checks ----------
 doctor:
+	@echo "==> Doctor: detected OS = $(UNAME_S)"
 	@echo "==> Doctor: repo layout"
 	@test -d "$(REPO_DIR)/scripts" || (echo "Missing ./scripts"; exit 1)
 	@test -d "$(REPO_DIR)/config"  || (echo "Missing ./config (for ~/.config symlinks)"; exit 1)
-	@test -f "$(REPO_DIR)/apt/packages.txt" || (echo "Missing ./apt/packages.txt"; exit 1)
 	@test -f "$(REPO_DIR)/zsh/zshrc" || (echo "Missing ./zsh/zshrc"; exit 1)
 	@test -f "$(REPO_DIR)/zsh/zsh_aliases" || (echo "Missing ./zsh/zsh_aliases"; exit 1)
 	@test -f "$(REPO_DIR)/zsh/plugins.txt" || (echo "Missing ./zsh/plugins.txt"; exit 1)
 
-	@echo "==> Doctor: required executables (some installed by apt/mise later)"
+	@if [ "$(UNAME_S)" = "Linux" ]; then \
+	  test -f "$(REPO_DIR)/apt/packages.txt" || (echo "Missing ./apt/packages.txt"; exit 1); \
+	elif [ "$(UNAME_S)" = "Darwin" ]; then \
+	  test -f "$(REPO_DIR)/brew/Brewfile" || (echo "Missing ./brew/Brewfile"; exit 1); \
+	fi
+
+	@echo "==> Doctor: required executables (some installed by packages/mise later)"
 	@command -v bash >/dev/null
-	@command -v curl >/dev/null || echo "WARN: curl not found yet (installed by make apt)"
-	@command -v git  >/dev/null || echo "WARN: git not found yet (installed by make apt)"
+	@command -v curl >/dev/null || echo "WARN: curl not found yet (installed by make packages)"
+	@command -v git  >/dev/null || echo "WARN: git not found yet (installed by make packages)"
 
 	@echo "==> Doctor: mise config presence in repo"
 	@test -f "$(REPO_DIR)/config/mise/config.toml" || (echo "Missing ./config/mise/config.toml"; exit 1)
 
 	@echo "==> Doctor: symlink plan"
 	@echo "  Will link: $(REPO_DIR)/config/* -> ~/.config/*"
-	@echo "  Will link: $(REPO_DIR)/zsh/.zshrc -> ~/.zshrc"
-	@echo "  Will link: $(REPO_DIR)/zsh/.zsh_aliases -> ~/.zsh_aliases"
-	@echo "  Will link: $(REPO_DIR)/config/starship.tomL -> ~/.config/starship.toml"
+	@echo "  Will link: $(REPO_DIR)/zsh/zshrc -> ~/.zshrc"
+	@echo "  Will link: $(REPO_DIR)/zsh/zsh_aliases -> ~/.zsh_aliases"
+	@echo "  Will link: $(REPO_DIR)/zsh/helpers.zsh -> ~/helpers.zsh"
 
 	@echo "==> Doctor: after-link checks (only if you've already run make link)"
 	@if [ -L "$$HOME/.config/mise" ]; then \
@@ -107,4 +117,3 @@ doctor:
 	fi
 
 	@echo "✅ Doctor complete."
-

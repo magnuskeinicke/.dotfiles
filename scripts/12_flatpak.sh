@@ -2,6 +2,13 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=./_os.sh
+source "$REPO_DIR/scripts/_os.sh"
+
+if [ "$OS_FAMILY" != "linux" ]; then
+  echo "Skipping flatpak on $OS_FAMILY (GUI apps come from Brewfile casks)."
+  exit 0
+fi
 
 # Files (either can be missing; script handles that)
 LIST_FLATHUB="$REPO_DIR/flatpak/packages.txt"

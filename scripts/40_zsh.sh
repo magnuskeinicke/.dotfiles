@@ -6,7 +6,6 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ZSH="$HOME/.oh-my-zsh"
 export ZSH_CUSTOM="${ZSH_CUSTOM:-$ZSH/custom}"
 
-sudo apt-get install -y zsh git
 
 if [ ! -d "$ZSH" ]; then
   RUNZSH=no CHSH=no sh -c \
@@ -35,6 +34,11 @@ done < "$REPO_DIR/zsh/plugins.txt"
 if command -v zsh >/dev/null 2>&1; then
   ZSH_PATH="$(command -v zsh)"
   if [ "${SHELL:-}" != "$ZSH_PATH" ]; then
+    # macOS chsh requires the shell to be listed in /etc/shells.
+    if [ -f /etc/shells ] && ! grep -qx "$ZSH_PATH" /etc/shells; then
+      echo "Adding $ZSH_PATH to /etc/shells (requires sudo)"
+      echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
+    fi
     echo "Setting default shell to zsh ($ZSH_PATH)..."
     chsh -s "$ZSH_PATH"
     echo "Default shell changed. It applies to NEW sessions."

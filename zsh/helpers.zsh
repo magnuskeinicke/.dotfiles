@@ -6,9 +6,25 @@
 : "${DOTFILES_DIR:=${HOME}/dotfiles}"
 FLATPAK_LIST="${DOTFILES_DIR}/flatpak/packages.txt"
 APT_LIST="${DOTFILES_DIR}/apt/packages.txt"
+BREWFILE="${DOTFILES_DIR}/brew/Brewfile"
 
 # Ensure parent dirs exist
-mkdir -p "${FLATPAK_LIST:h}" "${APT_LIST:h}"
+mkdir -p "${FLATPAK_LIST:h}" "${APT_LIST:h}" "${BREWFILE:h}"
+
+# ---- OS family ----
+case "$(uname -s)" in
+  Darwin*) _OS_FAMILY=macos ;;
+  Linux*)  _OS_FAMILY=linux ;;
+  *)       _OS_FAMILY=unknown ;;
+esac
+
+_require_os() {
+  # _require_os <expected> <cmd-name>
+  if [[ "$_OS_FAMILY" != "$1" ]]; then
+    _err "$2 is only available on $1 (running on $_OS_FAMILY)"
+    return 1
+  fi
+}
 
 # ---- Colors (zsh) ----
 autoload -U colors && colors
@@ -149,6 +165,7 @@ fp-i() {
     _DRYRUN=1
     shift
   fi
+  _require_os linux fp-i || return $?
   _need_cmd flatpak || return $?
   _for_each fp-i "$FLATPAK_LIST" install "$@"
 }
@@ -158,6 +175,7 @@ fp-rm() {
     _DRYRUN=1
     shift
   fi
+  _require_os linux fp-rm || return $?
   _need_cmd flatpak || return $?
   _for_each fp-rm "$FLATPAK_LIST" remove "$@"
 }
@@ -167,6 +185,7 @@ fp-up() {
     _DRYRUN=1
     shift
   fi
+  _require_os linux fp-up || return $?
   _need_cmd flatpak || return $?
   _log "Flatpak update (user)"
   _run flatpak update --user -y
@@ -182,6 +201,7 @@ apt-i() {
     shift
   fi
   [[ $# -ge 1 ]] || _usage apt-i "<pkg> [pkg ...]"
+  _require_os linux apt-i || return $?
   _need_cmd apt || return $?
 
   _log "apt update"
@@ -203,6 +223,7 @@ apt-rm() {
     shift
   fi
   [[ $# -ge 1 ]] || _usage apt-rm "<pkg> [pkg ...]"
+  _require_os linux apt-rm || return $?
   _need_cmd apt || return $?
 
   _log "apt purge: $*"
@@ -220,12 +241,109 @@ apt-up() {
     _DRYRUN=1
     shift
   fi
+  _require_os linux apt-up || return $?
   _need_cmd apt || return $?
   _log "apt update"
   _run sudo apt update || return $?
   _log "apt upgrade"
   _run sudo apt upgrade -y || return $?
   _ok "Apt upgraded"
+}
+
+# =========================
+# Homebrew (macOS)
+# =========================
+# Tracks installs in brew/Brewfile so the bootstrap stays declarative.
+
+_brew_append() {
+  # _brew_append <kind:brew|cask> <name>
+  local kind="$1" name="$2"
+  local line
+  if [[ "$kind" == "cask" ]]; then
+    line="cask \"$name\""
+  else
+    line="brew \"$name\""
+  fi
+  _append_if_missing "$line" "$BREWFILE"
+}
+
+_brew_remove() {
+  local kind="$1" name="$2"
+  local line
+  if [[ "$kind" == "cask" ]]; then
+    line="cask \"$name\""
+  else
+    line="brew \"$name\""
+  fi
+  _remove_if_present "$line" "$BREWFILE"
+}
+
+brew-i() {
+  if [[ "$1" == "--dry-run" || "$1" == "-n" ]]; then
+    _DRYRUN=1
+    shift
+  fi
+  local kind="brew"
+  if [[ "$1" == "--cask" ]]; then
+    kind="cask"
+    shift
+  fi
+  [[ $# -ge 1 ]] || _usage brew-i "[--cask] <pkg> [pkg ...]"
+  _require_os macos brew-i || return $?
+  _need_cmd brew || return $?
+
+  local args=(install)
+  [[ "$kind" == "cask" ]] && args+=(--cask)
+
+  _log "brew ${args[*]}: $*"
+  _run brew "${args[@]}" "$@" || return $?
+
+  local pkg
+  for pkg in "$@"; do
+    _brew_append "$kind" "$pkg"
+  done
+  _ok "Brew install complete"
+}
+
+brew-rm() {
+  if [[ "$1" == "--dry-run" || "$1" == "-n" ]]; then
+    _DRYRUN=1
+    shift
+  fi
+  local kind="brew"
+  if [[ "$1" == "--cask" ]]; then
+    kind="cask"
+    shift
+  fi
+  [[ $# -ge 1 ]] || _usage brew-rm "[--cask] <pkg> [pkg ...]"
+  _require_os macos brew-rm || return $?
+  _need_cmd brew || return $?
+
+  local args=(uninstall)
+  [[ "$kind" == "cask" ]] && args+=(--cask)
+
+  _log "brew ${args[*]}: $*"
+  _run brew "${args[@]}" "$@" || return $?
+
+  local pkg
+  for pkg in "$@"; do
+    _brew_remove "$kind" "$pkg"
+  done
+  _ok "Brew uninstall complete"
+}
+
+brew-up() {
+  if [[ "$1" == "--dry-run" || "$1" == "-n" ]]; then
+    _DRYRUN=1
+    shift
+  fi
+  _require_os macos brew-up || return $?
+  _need_cmd brew || return $?
+  _log "brew update"
+  _run brew update || return $?
+  _log "brew upgrade"
+  _run brew upgrade || return $?
+  _ok "Brew upgraded"
 }
 
 # =========================
@@ -270,8 +388,12 @@ all-up() {
     _DRYRUN=1
     shift
   fi
-  fp-up
-  apt-up
+  if [[ "$_OS_FAMILY" == "linux" ]]; then
+    fp-up
+    apt-up
+  elif [[ "$_OS_FAMILY" == "macos" ]]; then
+    brew-up
+  fi
   mise-up
   _ok "All updates done"
 }
