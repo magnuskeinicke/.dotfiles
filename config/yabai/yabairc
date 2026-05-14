@@ -26,6 +26,11 @@ yabai -m signal --add event=application_terminated action="$HOME/.config/yabai/s
 # MIN_PER_DISPLAY per display). Idempotent — never destroys.
 "$HOME/.config/yabai/scripts/init-workspaces.sh"
 
+# Refresh SketchyBar's workspace pills now that yabai is up. Covers the
+# cold-boot case where sketchybar started before yabai and ended up with
+# no space items. No-op if sketchybar isn't running.
+"$HOME/.config/sketchybar/plugins/spaces_refresh.sh" >/dev/null 2>&1 &
+
 # Tiling layout: bsp = binary space partitioning (new windows auto-tile
 # next to the focused one, like COSMIC). Alternatives: stack, float.
 yabai -m config layout bsp

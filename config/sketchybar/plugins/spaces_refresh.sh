@@ -9,7 +9,15 @@ PLUGIN_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}/plugins"
 # Catppuccin Mocha — must match sketchybarrc.
 SURFACE=0xff313244
 
-SPACES_JSON=$(yabai -m query --spaces 2>/dev/null || echo '[]')
+# Wait briefly for yabai to be ready. On a cold boot sketchybar can start
+# before yabai's socket is listening; without this retry we'd add zero
+# pills and the bar would have no workspace indicators until manual reload.
+SPACES_JSON='[]'
+for _ in $(seq 1 20); do
+  SPACES_JSON=$(yabai -m query --spaces 2>/dev/null || echo '[]')
+  [ "$SPACES_JSON" != '[]' ] && [ -n "$SPACES_JSON" ] && break
+  sleep 0.5
+done
 WANT_IDX=$(echo "$SPACES_JSON" | jq -r '.[].index')
 
 EXISTING=$(sketchybar --query bar 2>/dev/null \
