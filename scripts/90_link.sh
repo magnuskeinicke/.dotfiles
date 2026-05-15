@@ -31,4 +31,21 @@ ln -sf "$REPO_DIR/zsh/helpers.zsh" "$HOME/helpers.zsh"
 ln -sf "$REPO_DIR/git/gitconfig" "$HOME/.gitconfig"
 ln -sf "$REPO_DIR/git/gitconfig-work" "$HOME/.gitconfig-work"
 
+# Link every file under dotfiles/claude/ into ~/.claude/, preserving structure.
+# Leaves the rest of ~/.claude (sessions, caches, credentials, plugins) alone.
+if [ -d "$REPO_DIR/claude" ]; then
+  echo "Linking ~/.claude/* from dotfiles/claude/ ..."
+  mkdir -p "$HOME/.claude"
+  while IFS= read -r -d '' src; do
+    rel="${src#$REPO_DIR/claude/}"
+    dst="$HOME/.claude/$rel"
+    mkdir -p "$(dirname "$dst")"
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+      echo "  Backing up existing $dst -> $dst.bak"
+      mv "$dst" "$dst.bak"
+    fi
+    ln -sfn "$src" "$dst"
+  done < <(find "$REPO_DIR/claude" -type f -print0)
+fi
+
 echo "Done linking."

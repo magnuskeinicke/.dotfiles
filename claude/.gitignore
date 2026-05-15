@@ -1,0 +1,4 @@
+# Never commit secrets or local backups into the tracked claude/ tree.
+.credentials.json
+*.bak
+*.orig

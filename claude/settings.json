@@ -1,0 +1,54 @@
+{
+  "env": {},
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/home/keinicke/.claude/hooks/copy-env-to-worktree.sh\"",
+            "timeout": 15,
+            "statusMessage": "Syncing gitignored local files into worktree..."
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "msg=$(jq -r '.message // \"Claude needs your attention\"'); notify-send -u normal -a 'Claude Code' 'Claude Code' \"$msg\""
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/keinicke/.claude/statusline-command.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "caveman@caveman": true,
+    "nx@nx-claude-plugins": true,
+    "context7@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen"
+}
