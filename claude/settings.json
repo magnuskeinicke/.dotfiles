@@ -1,5 +1,7 @@
 {
-  "env": {},
+  "env": {
+    "ENABLE_CLAUDEAI_MCP_SERVERS": "false"
+  },
   "permissions": {
     "allow": [],
     "deny": []
@@ -11,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"/home/keinicke/.claude/hooks/copy-env-to-worktree.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/copy-env-to-worktree.sh\"",
             "timeout": 15,
             "statusMessage": "Syncing gitignored local files into worktree..."
           }
@@ -23,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "msg=$(jq -r '.message // \"Claude needs your attention\"'); notify-send -u normal -a 'Claude Code' 'Claude Code' \"$msg\""
+            "command": "msg=$(jq -r '.message // \"Claude needs your attention\"'); if [ \"$(uname -s)\" = \"Darwin\" ]; then osascript -e \"display notification \\\"$msg\\\" with title \\\"Claude Code\\\"\"; else notify-send -u normal -a 'Claude Code' 'Claude Code' \"$msg\"; fi"
           }
         ]
       }
@@ -31,7 +33,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/keinicke/.claude/statusline-command.sh",
+    "command": "bash \"$HOME/.claude/statusline-command.sh\"",
     "padding": 0
   },
   "enabledPlugins": {
@@ -50,5 +52,6 @@
     }
   },
   "effortLevel": "xhigh",
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "theme": "dark"
 }
