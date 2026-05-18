@@ -10,7 +10,7 @@ SHELL := /bin/bash
 
 .DEFAULT_GOAL := help
 
-.PHONY: all help doctor link packages apt mise starship zsh ssh-github tmux nvim fonts flatpak yabai-sa mise-launchd
+.PHONY: all help doctor link packages apt mise starship zsh ssh-github tmux nvim fonts flatpak yabai-sa mise-launchd macos-animations macos-animations-revert
 
 REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 UNAME_S  := $(shell uname -s)
@@ -18,7 +18,7 @@ UNAME_S  := $(shell uname -s)
 # macOS-only steps appended to `make all` (empty on Linux).
 MAC_ONLY_STEPS :=
 ifeq ($(UNAME_S),Darwin)
-MAC_ONLY_STEPS += yabai-sa mise-launchd
+MAC_ONLY_STEPS += yabai-sa mise-launchd macos-animations
 endif
 
 help:
@@ -37,6 +37,8 @@ help:
 	@echo "  make nvim        - headless nvim plugin install/update"
 	@echo "  make yabai-sa    - install yabai scripting-addition sudoers rule (macOS only; no-op elsewhere)"
 	@echo "  make mise-launchd - install LaunchAgent so GUI apps see mise shims in PATH (macOS only; no-op elsewhere)"
+	@echo "  make macos-animations - disable macOS UI animations (Reduce Motion, Dock, Finder; macOS only)"
+	@echo "  make macos-animations-revert - restore macOS animation defaults"
 	@echo ""
 	@echo "Tip: run 'make doctor' first. Detected OS: $(UNAME_S)"
 
@@ -83,6 +85,12 @@ yabai-sa:
 
 mise-launchd:
 	./scripts/96_mise_launchd.sh
+
+macos-animations:
+	./scripts/97_macos_animations.sh
+
+macos-animations-revert:
+	./scripts/97_macos_animations.sh --revert
 
 # ---------- Checks ----------
 doctor:
