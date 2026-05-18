@@ -20,8 +20,7 @@ case "$DIR" in
     exec "$(dirname "$0")/move-to-next-space.sh"
     ;;
   west)
-    yabai -m window --space prev --focus 2>/dev/null || true
-    "$(dirname "$0")/cleanup-empty-spaces.sh"
+    exec "$(dirname "$0")/move-to-prev-space.sh"
     ;;
   *)
     echo "swap-or-move.sh: unknown direction '$DIR' (expected east|west)" >&2

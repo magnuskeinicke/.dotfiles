@@ -1,23 +1,32 @@
 #!/usr/bin/env bash
-# Move the focused window to the next space, COSMIC-style: if there is
-# no next space, create one first. Requires yabai's scripting addition
-# (which yabairc already loads).
+# Move the focused window to the next space on the SAME display.
+# If there is no next space on this display, create one (on this display)
+# and move the window there. Window-focus follows.
+#
+# Requires yabai's scripting addition (loaded by yabairc).
 
 set -e
 
-current_idx=$(yabai -m query --spaces --space | jq -r '.index')
-last_idx=$(yabai -m query --spaces | jq -r '[.[].index] | max')
+snapshot=$(yabai -m query --spaces)
 
-if [ "$current_idx" -ge "$last_idx" ]; then
+read -r source_idx disp <<<"$(jq -r '.[] | select(."has-focus") | "\(.index) \(.display)"' <<<"$snapshot")"
+[ -z "$source_idx" ] && exit 0
+
+# Next space index on the same display, if any.
+target=$(jq -r --argjson cur "$source_idx" --argjson d "$disp" '
+    [.[] | select(.display == $d and .index > $cur)]
+    | sort_by(.index) | .[0].index // empty' <<<"$snapshot")
+
+if [ -z "$target" ]; then
+  # At the last space of this display — create a new one here.
+  # `space --create` creates on the focused display.
   yabai -m space --create
-  # yabai appends the new space at the end; pick whatever the new max is
-  # rather than assuming last_idx+1, in case another display shares numbering.
-  target=$(yabai -m query --spaces | jq -r '[.[].index] | max')
-  yabai -m window --space "$target" --focus
-else
-  yabai -m window --space next --focus
+  # New space lands as the highest index on this display.
+  target=$(yabai -m query --spaces | jq -r --argjson d "$disp" '
+      [.[] | select(.display == $d) | .index] | max')
 fi
 
-# The space we just left might now be empty — clean it up if it's beyond
-# the predefined baseline. window_destroyed signals don't fire on moves.
-"$(dirname "$0")/cleanup-empty-spaces.sh"
+yabai -m window --space "$target" --focus
+
+# Targeted cleanup of just the source space.
+"$(dirname "$0")/cleanup-space.sh" "$source_idx"

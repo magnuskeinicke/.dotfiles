@@ -8,7 +8,7 @@
 # Called by yabai signals (window_destroyed, application_terminated)
 # and by the window-move helpers (move-to-next-space.sh, swap-or-move.sh).
 
-MIN_PER_DISPLAY=5
+MIN_PER_DISPLAY=3
 
 # Loop until a pass finds no destruction candidate. yabai reindexes
 # spaces after each destroy, so we re-query every iteration. We always

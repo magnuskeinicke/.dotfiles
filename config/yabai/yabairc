@@ -16,7 +16,9 @@ yabai -m signal --add event=display_changed action="sketchybar --trigger display
 yabai -m signal --add event=space_created   action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
 yabai -m signal --add event=space_destroyed action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
 
-# Auto-destroy empty dynamic workspaces when their last window leaves.
+# Auto-destroy empty dynamic workspaces. Window-move helpers
+# (move-to-next-space.sh, swap-or-move.sh) call the script directly, so
+# only window destroy + app termination need signal coverage here.
 # The first MIN_PER_DISPLAY spaces (set inside the script) are preserved
 # as predefined workspaces even when empty.
 yabai -m signal --add event=window_destroyed       action="$HOME/.config/yabai/scripts/cleanup-empty-spaces.sh"
@@ -52,10 +54,33 @@ yabai -m config window_shadow float
 # Opacity: yabai is the single source of truth — apps shouldn't set their own
 # opacity (e.g. Ghostty's background-opacity is now 1.0), otherwise values
 # multiply.
-yabai -m config window_opacity        on
+#
+# `window_opacity` is OFF because yabai's built-in mode treats each
+# display's key window as focused — windows on inactive displays then
+# render at active opacity. refresh-opacity.sh (signal-driven below)
+# enforces a single global focused window instead.
+yabai -m config window_opacity        off
 yabai -m config active_window_opacity 0.95
 yabai -m config normal_window_opacity 0.8
+
+# Drive opacity manually so only one window — the truly focused one —
+# is at active opacity, regardless of how many displays are connected.
+# Just one signal: every cross-space / cross-display / app-switch focus
+# change ultimately emits window_focused, so subscribing to the other
+# events would only multiply the same work.
+yabai -m signal --add event=window_focused action="$HOME/.config/yabai/scripts/refresh-opacity.sh"
+
+# One-shot full sweep so existing windows pick up correct opacity at
+# startup. After this the diff-only signal handler keeps state in sync.
+"$HOME/.config/yabai/scripts/init-opacity.sh" >/dev/null 2>&1 &
 
 # Focus follows mouse (COSMIC-like): hovering a window focuses it.
 # Options: autofocus (focus only), autoraise (focus + raise to top), off.
 yabai -m config focus_follows_mouse autofocus
+
+# Mouse follows focus: when focus changes via keyboard (e.g. cross-display
+# focus moves), warp the cursor to the new focused window. Without this,
+# the cursor can be on screen A while focus lives on screen B, producing
+# the "two screens look focused at once" feeling and confusing macOS when
+# you then trigger a space switch.
+yabai -m config mouse_follows_focus on

@@ -5,7 +5,7 @@
 #
 # Safe to re-run: it only creates missing spaces, never destroys.
 
-MIN_PER_DISPLAY=5
+MIN_PER_DISPLAY=3
 
 # Remember the focused display so we can restore it at the end —
 # creating a space requires focusing its target display.

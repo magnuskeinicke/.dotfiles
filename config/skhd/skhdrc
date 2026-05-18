@@ -7,14 +7,17 @@
 # Reload after edits:  skhd --reload
 
 # --- Focus window (hjkl + arrows) ---
-rcmd - h          : yabai -m window --focus west
-rcmd - j          : yabai -m window --focus south
-rcmd - k          : yabai -m window --focus north
-rcmd - l          : yabai -m window --focus east
-rcmd - left       : yabai -m window --focus west
-rcmd - down       : yabai -m window --focus south
-rcmd - up         : yabai -m window --focus north
-rcmd - right      : yabai -m window --focus east
+# Cycles across displays at the edge: when there's no neighbor window in
+# the requested direction, focus jumps to the adjacent display and lands
+# on the edge-most window facing back toward the source.
+rcmd - h          : ~/.config/yabai/scripts/focus-or-display.sh west
+rcmd - j          : ~/.config/yabai/scripts/focus-or-display.sh south
+rcmd - k          : ~/.config/yabai/scripts/focus-or-display.sh north
+rcmd - l          : ~/.config/yabai/scripts/focus-or-display.sh east
+rcmd - left       : ~/.config/yabai/scripts/focus-or-display.sh west
+rcmd - down       : ~/.config/yabai/scripts/focus-or-display.sh south
+rcmd - up         : ~/.config/yabai/scripts/focus-or-display.sh north
+rcmd - right      : ~/.config/yabai/scripts/focus-or-display.sh east
 
 # --- Swap window in direction (hjkl + arrows) ---
 # Horizontal swaps fall through to space moves at the edge of the workspace:
@@ -75,28 +78,37 @@ shift + rcmd - 7  : yabai -m window --space 7
 shift + rcmd - 8  : yabai -m window --space 8
 shift + rcmd - 9  : yabai -m window --space 9
 
-# Cycle spaces COSMIC-style (Super+Ctrl+h/l)
-ctrl + rcmd - h     : yabai -m space --focus prev
-ctrl + rcmd - l     : yabai -m space --focus next
-ctrl + rcmd - left  : yabai -m space --focus prev
-ctrl + rcmd - right : yabai -m space --focus next
+# Cycle spaces — positional (rcmd+ctrl+h/l). Stays on the current display
+# until its spaces run out, then hops to the adjacent display.
+ctrl + rcmd - h     : ~/.config/yabai/scripts/space-cycle-positional.sh west
+ctrl + rcmd - l     : ~/.config/yabai/scripts/space-cycle-positional.sh east
+ctrl + rcmd - left  : ~/.config/yabai/scripts/space-cycle-positional.sh west
+ctrl + rcmd - right : ~/.config/yabai/scripts/space-cycle-positional.sh east
 
-# Move focused window to prev/next space (COSMIC Super+Shift+Ctrl+arrow).
-# Going "next" past the last space creates a new one — dynamic workspaces.
-shift + ctrl + rcmd - h     : yabai -m window --space prev --focus
+# Cycle spaces — by global index, wrapping at the ends (rcmd+tab / +shift).
+rcmd - tab          : ~/.config/yabai/scripts/space-cycle-index.sh next
+shift + rcmd - tab  : ~/.config/yabai/scripts/space-cycle-index.sh prev
+
+# Move focused window to prev/next space on the SAME display
+# (COSMIC Super+Shift+Ctrl+arrow). Going "next" past the last space on
+# this display creates a new one — dynamic workspaces, display-local.
+shift + ctrl + rcmd - h     : ~/.config/yabai/scripts/move-to-prev-space.sh
 shift + ctrl + rcmd - l     : ~/.config/yabai/scripts/move-to-next-space.sh
-shift + ctrl + rcmd - left  : yabai -m window --space prev --focus
+shift + ctrl + rcmd - left  : ~/.config/yabai/scripts/move-to-prev-space.sh
 shift + ctrl + rcmd - right : ~/.config/yabai/scripts/move-to-next-space.sh
 
 # --- Displays (monitors) ---
-# Focus prev/next display
-alt + rcmd - h     : yabai -m display --focus prev
-alt + rcmd - l     : yabai -m display --focus next
-alt + rcmd - left  : yabai -m display --focus prev
-alt + rcmd - right : yabai -m display --focus next
+# Focus display by spatial direction. `prev`/`next` walk yabai's internal
+# display index, which is not guaranteed to match physical left/right —
+# `west`/`east` use actual geometry, so h is always the screen to the
+# left and l always the screen to the right.
+alt + rcmd - h     : yabai -m display --focus west
+alt + rcmd - l     : yabai -m display --focus east
+alt + rcmd - left  : yabai -m display --focus west
+alt + rcmd - right : yabai -m display --focus east
 
-# Move focused window to prev/next display (and follow it)
-shift + alt + rcmd - h     : yabai -m window --display prev --focus
-shift + alt + rcmd - l     : yabai -m window --display next --focus
-shift + alt + rcmd - left  : yabai -m window --display prev --focus
-shift + alt + rcmd - right : yabai -m window --display next --focus
+# Move focused window to display in spatial direction (and follow it).
+shift + alt + rcmd - h     : yabai -m window --display west --focus
+shift + alt + rcmd - l     : yabai -m window --display east --focus
+shift + alt + rcmd - left  : yabai -m window --display west --focus
+shift + alt + rcmd - right : yabai -m window --display east --focus
