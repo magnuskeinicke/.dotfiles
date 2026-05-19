@@ -30,3 +30,8 @@ yabai -m window --space "$target" --focus
 
 # Targeted cleanup of just the source space.
 "$(dirname "$0")/cleanup-space.sh" "$source_idx"
+
+# Refresh the bar deterministically. yabai's space_created signal also
+# fires this script, but that handler races with this script's flow —
+# direct call here guarantees the pill exists before we return.
+"${HOME}/.config/sketchybar/plugins/spaces_refresh.sh" >/dev/null 2>&1 &

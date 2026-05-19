@@ -6,6 +6,19 @@
 
 PLUGIN_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}/plugins"
 
+# Serialize concurrent runs. yabai's space_created/space_destroyed
+# signals fire as separate processes, and the window-move helpers call
+# this script directly — two refreshes racing could see inconsistent
+# bar state (one queries `--query bar` before the other has --add'd a
+# pill, then "removes" what it sees as a pill not in WANT_IDX).
+# macOS has no flock(1); mkdir is atomic across processes.
+LOCK=/tmp/spaces_refresh.lock
+for _ in $(seq 1 200); do
+  mkdir "$LOCK" 2>/dev/null && break
+  sleep 0.05
+done
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+
 # Catppuccin Mocha — must match sketchybarrc.
 SURFACE=0xff313244
 
@@ -54,3 +67,9 @@ for idx in $WANT_IDX; do
 done
 
 sketchybar --update
+
+# Re-fire space_change so every pill (including any just-added one)
+# recomputes its highlight against yabai's currently focused space.
+# Without this, a pill added after the space_changed event already
+# fired stays at its --add-time background color.
+sketchybar --trigger space_change
