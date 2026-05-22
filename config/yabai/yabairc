@@ -16,6 +16,13 @@ yabai -m signal --add event=display_changed action="sketchybar --trigger display
 yabai -m signal --add event=space_created   action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
 yabai -m signal --add event=space_destroyed action="$HOME/.config/sketchybar/plugins/spaces_refresh.sh"
 
+# Reconcile spaces + sketchybar bars whenever displays are added or removed
+# (external plug/unplug, lid open/close with externals attached). Without
+# this, sketchybar can end up missing a bar instance on a newly-attached
+# display and render its space pills on the wrong screen.
+yabai -m signal --add event=display_added   action="$HOME/.config/yabai/scripts/reconcile-displays.sh"
+yabai -m signal --add event=display_removed action="$HOME/.config/yabai/scripts/reconcile-displays.sh"
+
 # Auto-destroy empty dynamic workspaces. Window-move helpers
 # (move-to-next-space.sh, swap-or-move.sh) call the script directly, so
 # only window destroy + app termination need signal coverage here.
