@@ -188,6 +188,7 @@ _secret() {
 export GITHUB_PAT="$(_secret github-mcp)"
 export FIGMA_PAT="$(_secret figma-mcp)"
 export POSTHOG_PAT="$(_secret posthog-pat)"
+export CROWDIN_MCP_PAT="$(_secret crowdin-mcp)"
 
 
 # Start tmux if not inside tmux
