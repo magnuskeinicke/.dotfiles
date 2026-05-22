@@ -55,5 +55,6 @@
   },
   "effortLevel": "xhigh",
   "tui": "fullscreen",
-  "theme": "dark"
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true
 }
