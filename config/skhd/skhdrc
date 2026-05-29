@@ -54,6 +54,10 @@ shift + rcmd - y  : yabai -m space --mirror y-axis
 # --- Help ---
 rcmd - c          : open -na Ghostty --args --command="less ~/.config/skhd/cheatsheet.txt"
 
+# Reconcile yabai spaces + sketchybar after a display hotplug glitch.
+# Re-runs init-workspaces, cleans empty spaces, and reloads sketchybar.
+ctrl + rcmd - return : ~/.config/yabai/scripts/reconcile-displays.sh
+
 # --- Spaces (workspaces) ---
 # Focus by number. Requires SIP partial-disable for yabai's space focus;
 # without it, fall back to macOS native ctrl+1..9 (set in System Settings).
