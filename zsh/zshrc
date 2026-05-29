@@ -199,4 +199,4 @@ fi
 fpath+=${ZDOTDIR:-~}/.zsh_functions
 
 eval "$(starship init zsh)"
-eval "$(mise activate zsh)"
+eval "$(mise activate zsh --shims)"
