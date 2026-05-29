@@ -24,10 +24,12 @@ for _ in $(seq 1 200); do
 done
 trap 'rmdir "$LOCK" 2>/dev/null' EXIT
 
-# Brief settle wait — macOS reports the display change before the
-# CGDisplay topology is fully stable, and creating spaces too early
-# can land them on the wrong display.
-sleep 0.5
+# Settle wait — macOS reports the display change before the CGDisplay
+# topology is fully stable, and creating spaces too early can land them
+# on the wrong display. At boot the topology can churn for several
+# seconds as a dock + direct-USB-C displays enumerate independently;
+# 0.5s wasn't enough and triggered runaway space creation. Bump to 2s.
+sleep 2
 
 "$HOME/.config/yabai/scripts/init-workspaces.sh"
 "$HOME/.config/yabai/scripts/cleanup-empty-spaces.sh"

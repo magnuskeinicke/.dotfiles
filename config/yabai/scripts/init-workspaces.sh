@@ -6,6 +6,12 @@
 # Safe to re-run: it only creates missing spaces, never destroys.
 
 MIN_PER_DISPLAY=3
+# Hard cap per iteration. During a boot-time display storm `display --focus`
+# can silently fail (display not yet stable), causing `space --create` to
+# land on the wrong display — the per-display count never reaches the
+# baseline and an unbounded loop spawns dozens of orphan spaces. Cap +
+# focus-verification stops that cold.
+MAX_CREATES=5
 
 # Remember the focused display so we can restore it at the end —
 # creating a space requires focusing its target display.
@@ -13,9 +19,17 @@ original=$(yabai -m query --displays --display 2>/dev/null | jq -r '.index // em
 
 for did in $(yabai -m query --displays 2>/dev/null | jq -r '.[].index'); do
   count=$(yabai -m query --spaces --display "$did" | jq 'length')
-  while [ "$count" -lt "$MIN_PER_DISPLAY" ]; do
-    yabai -m display --focus "$did" 2>/dev/null
-    yabai -m space --create
+  created=0
+  while [ "$count" -lt "$MIN_PER_DISPLAY" ] && [ "$created" -lt "$MAX_CREATES" ]; do
+    # Verify the focus actually landed before creating — otherwise the new
+    # space lands on whatever display currently has focus.
+    yabai -m display --focus "$did" 2>/dev/null || true
+    focused=$(yabai -m query --displays --display 2>/dev/null | jq -r '.index // empty')
+    if [ "$focused" != "$did" ]; then
+      break
+    fi
+    yabai -m space --create || break
+    created=$((created + 1))
     count=$(yabai -m query --spaces --display "$did" | jq 'length')
   done
 done
